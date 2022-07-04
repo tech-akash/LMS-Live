@@ -1,0 +1,128 @@
+All Api's
+
+User gets the token which will used for authentications
+signin - http://127.0.0.1:8000/signin/
+post request ->
+{
+    "useranme": your username,
+    "password":your password,
+}
+
+
+signup - http://127.0.0.1:8000/signup/
+
+post request->
+{
+    "useranme": your username,
+    "password":your password,
+    "email":your email
+    "role": choose role Student/Instructor
+}
+
+User must send the token for asscessing these Api's
+
+profile http://127.0.0.1:8000/profile/
+
+get request
+
+edit profile http://127.0.0.1:8000/edit-profile/
+
+
+get Enrolled Student http://127.0.0.1:8000/get-enrolled-student/<id of the course>/
+
+
+
+home - http://127.0.0.1:8000/
+
+All Courses - http://127.0.0.1:8000/all-courses/
+
+Create Course - http://127.0.0.1:8000/create-course/
+
+post request format->
+should be send in form data format
+{
+    "name":course name,
+    "code":course code,
+    "discription":course discription,
+    "image":course image,
+
+}
+
+Edit Course Detail - http://127.0.0.1:8000/edit-course/<id of the course>/
+
+Put request
+
+******
+Delete Course intentionally not added because many students hardwork will go in vane :)
+******
+
+
+Create Quiz - http://127.0.0.1:8000/create-quiz/
+
+post request format->
+
+{
+    "name":Quiz Name,
+    "totalMarks":0,//gets initilaised when instructor adds questions
+    "timeLimit":time limit in minutes,
+    "CourseId":Course id whose this quiz belongs to
+
+}
+
+Edit Quiz - http://127.0.0.1:8000/edit-quiz/<id of the quiz>/
+
+Delete Quiz - http://127.0.0.1:8000/delete-quiz/<id of the quiz>/
+
+toggle Enroll Course - http://127.0.0.1:8000/toggle-enroll-course/
+
+for enrolling and unenrolling the courses
+
+post request format->
+{
+    "code": this is Course Code,
+    "Instructor": Username of Instructor
+}
+
+Course Detail - http://127.0.0.1:8000/course-detail/<id of course>
+
+
+
+Add Question to the Quiz - http://127.0.0.1:8000/add-questions/
+
+post request format->
+
+{
+    "quizId":id of quiz the question is associated to,
+    "question": Enter the question,
+    "answer": Enter the answer,
+    "maxMarks": Enter the maxMarks associated to this question,
+    "opt": List of String as Options
+
+}
+
+Edit Question - http://127.0.0.1:8000/edit-questions/<id of question>/
+
+put request remains almost same to post
+only diffrence is to change option:
+
+{
+    "changedOption":[{"id": index of option that you want to change should be integer,"option":new option}]
+
+}
+
+Delete Question - http://127.0.0.1:8000/delete-question/<id of question>/
+
+
+Show Quiz - http://127.0.0.1:8000/show-quiz/<id of quiz>/
+
+Submit Quiz - http://127.0.0.1:8000/submit-quiz/
+
+post request format->
+
+{
+    "quizId":id of the quiz
+    "choosenOption":List of objects where object is { "questionId":id of Question,"answer":Choosen option}
+
+}
+
+show result - http://127.0.0.1:8000/show-result/<id of quiz>/
