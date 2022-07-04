@@ -29,9 +29,10 @@ def SignUp(request,*args, **kwargs):
     return Response({'status':200,'payload':serializer.data,'token':str(token)})
 
 
-@api_view(['POST'])
+@api_view(['POST','GET'])
 def SignIn(request,*args, **kwargs):
-    
+    if request.method == 'GET':
+        return Response({'status':403,'errors':'Please use POST method'})
     username=request.data.get('username')
     password=request.data.get('password')
     try:
