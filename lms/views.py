@@ -2,14 +2,14 @@ from decimal import Decimal
 from django.shortcuts import render
 from rest_framework.decorators import api_view,permission_classes,authentication_classes,parser_classes
 from rest_framework.response import Response
-from .serializers import UserSerializer,DashboardSerializer,CourseSerializer,CourseCreateSerializer,QuizSerializer,QuestionsSerializer,ResultSerializer,ProfileSerializer
+from .serializers import UserSerializer,DashboardSerializer,CourseSerializer,CourseCreateSerializer,QuizSerializer,QuestionsSerializer,ProfileSerializer
 from rest_framework.parsers import MultiPartParser
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import login,logout,authenticate
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
-from .models import Profile, Progress,Course,Quiz,Question,Result
+from .models import Profile, Progress,Course,Quiz,Question,quizAttempt
 import json
 
 
@@ -363,6 +363,9 @@ def genrateResult(request,*args, **kwargs):
             return Response({'status':401,'error':"Enroll in Course First!"})
         
         #calculating the result
+        obj=quizAttempt.objects.filter(student=request.user,quiz=quiz).count()
+        if obj>=quiz.allowedAttempt:
+            return Response({"satus":403,"error":"You have used your all attempts"})
         for solution in choosenOptions:
             try:
                 question=Question.objects.filter(id=solution['questionId']).values()
@@ -373,16 +376,12 @@ def genrateResult(request,*args, **kwargs):
             except:
                 return Response({'status':404,'error':'Question with that id not Found!'})
             
-        try:
-            result=Result.objects.create(student=request.user,quiz=quiz,marks=marks,choosenOptions=json.dumps(choosenOptions))
-            result.save()
-
-            return Response({'status':200,'payload':{
-                "marks":marks,
-                "quizId":request.data.get('quizId')
-            }})
-        except:
-            return Response({'status':403,'error':"Cant Not Attempt the Quiz Twice"})
+        result=quizAttempt.objects.create(student=request.user,quiz=quiz,marks=marks,choosenOptions=json.dumps(choosenOptions))
+        result.save()
+        return Response({'status':200,'payload':{
+            "marks":marks,
+            "quizId":request.data.get('quizId')
+        }})
 
 
 
@@ -398,13 +397,15 @@ def showResult(request,pk,*args, **kwargs):
         quiz=Quiz.objects.get(id=pk)
     except:
         return Response({'status':403,'error':"Quiz does not exist!"})
-    result=Result.objects.filter(quiz=quiz,user=request.user).values()
+    result=quizAttempt.objects.filter(quiz=quiz,user=request.user).values()
     #here we are checking if there is a result for that user for that particular quiz
     if len(result)==0:
         return Response({'status':401,'error':"Take the Quiz First to see results!"})
     #here we are changing the choosenOptions from string to list of objects
-    for solution in result[0]['choosenOptions']:
-        solution=json.loads(solution)
+    for i in range(len(result)):
+
+        for solution in result[i]['choosenOptions']:
+            solution=json.loads(solution)
     
     return Response({'status':200,'payload':result})
 

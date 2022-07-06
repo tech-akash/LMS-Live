@@ -4,8 +4,9 @@ from decimal import Decimal
 from django.contrib.auth.models import User
 from django.dispatch import receiver
 from django.core import serializers
-from .models import Profile,Question,Quiz,Result,Progress
+from .models import Profile,Question,Quiz,Progress, quizAttempt
 import json
+from django.db.models import Max
 @receiver(signals.post_save,sender=User)
 def create_profile(sender,instance,*args, **kwargs):
     if kwargs['created']:
@@ -29,19 +30,21 @@ def add_marks(sender,instance,*args, **kwargs):
         # profile=Quiz.objects.get()
         # profile.save()
 
-@receiver(signals.post_save,sender=Result)
+@receiver(signals.post_save,sender=quizAttempt)
 def update_progress(sender,instance,*args, **kwargs):
     if kwargs['created']:
+        
         data = serializers.serialize('json', [instance,])
         json_data = json.loads(data)
         quizId=json_data[0]['fields']['quiz']
         studentId=json_data[0]['fields']['student']
-        marks=json_data[0]['fields']['marks']
         Student=User.objects.get(id=studentId)
         quiz=Quiz.objects.get(id=quizId)
+        mxMarks=quizAttempt.objects.filter(quiz=quiz,student=Student).aggregate(Max('marks'))
+        # print(mxMarks)
         course=quiz.course
         progress=Progress.objects.get(course=course,Student=Student)
-        progress.currMarks+=Decimal(marks)
+        progress.currMarks+=Decimal(mxMarks['marks__max'])
         progress.save()
 
 
